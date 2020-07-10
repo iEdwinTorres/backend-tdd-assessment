@@ -50,12 +50,15 @@ The two files you will be editing are `test_echo.py` and `echo.py`. Don't worry 
     └── test_echo.py
 ```
 
-Even before you write a single test, you might find it useful to try out your test harness. Note the use of the `rerun` helper utility. You can `pip install` this useful tool that watches a directory for file changes, and re-runs the command each time it detects a newly-saved file. The VS Code IDE also has [built-in unit test discovery](https://code.visualstudio.com/docs/python/testing), but you must manually enable it.
+Even before you write a single test, you might find it useful to try out your test harness. Note the use of the `rerun` helper utility. You can `pip install` this useful tool that watches a directory for file changes, and re-runs the command each time it detects a newly-saved file. From the command line in terminal:
 
 ```console
 % pip install rerun
-% rerun "python -m unittest discover"
+% rerun "python -m unittest discover tests"
 ```
+NOTE: when running tests from the command line, your current working directory must be the project root directory.  If you run the tests from within the `tests` folder, you will see an error like this
+
+<img src="screenshots/import-error.png" />
 
 ## Running Tests from VSCode
 If you don't want your tests manually from the command line, VSCode has a nifty plugin feature that runs your tests directly from your code window.  Access this feature through the Test Tube icon on the left ribbon bar.  This VSCode plugin also supports [built-in unit test discovery](https://code.visualstudio.com/docs/python/unit-testing), but you must manually enable it.
