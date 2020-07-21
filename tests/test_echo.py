@@ -7,7 +7,7 @@ Students are expected to edit this module, to add more tests to run
 against the 'echo.py' program.
 """
 
-__author__ = "???"
+__author__ = "Edwin Torres"
 
 import sys
 import importlib
@@ -16,6 +16,7 @@ import argparse
 import unittest
 import subprocess
 from io import StringIO
+import echo
 
 # devs: change this to 'soln.echo' to run this suite against the solution
 PKG_NAME = 'echo'
@@ -77,8 +78,7 @@ class TestEcho(unittest.TestCase):
 
     def setUp(self):
         """Called by parent class ONCE before all tests are run"""
-        # your code here - use this space to create any instance variables
-        # that will be visible to your other test methods
+        self.parser = echo.create_parser()
         pass
 
     def test_parser(self):
@@ -88,36 +88,80 @@ class TestEcho(unittest.TestCase):
             result, argparse.ArgumentParser,
             "create_parser() function is not returning a parser object")
 
-    #
-    # Students: add more parser tests here
-    #
+    def test_help(self):
+        """Check if usage output matches what is expected."""
+        process = subprocess.Popen(
+            ["python", "./echo.py", "-h"],
+            stdout=subprocess.PIPE)
+        stdout, _ = process.communicate()
+        with open('USAGE') as f:
+            usage = f.read()
+        self.assertEqual(stdout.decode(), usage)
 
     def test_echo(self):
         """Check if main() function prints anything at all"""
-        stdout, stderr = run_capture(self.module.__file__)
+        _stdout, _stderr = run_capture(self.module.__file__)
         pass
 
     def test_simple_echo(self):
         """Check if main actually echoes an input string"""
         args = ['Was soll die ganze Aufregung?']
-        stdout, stderr = run_capture(self.module.__file__, args)
+        stdout, _stderr = run_capture(self.module.__file__, args)
         self.assertEqual(
             stdout[0], args[0],
-            "The program is not performing simple echo"
-            )
+            "The program is not performing simple echo")
 
     def test_lower_short(self):
         """Check if short option '-l' performs lowercasing"""
-        args = ["-l", "HELLO WORLD"]
-        with Capturing() as output:
-            self.module.main(args)
-        assert output, "The program did not print anything."
-        self.assertEqual(output[0], "hello world")
+        args_list = ["-l", "HELLO WORLD"]
+        args = self.parser.parse_args(args_list)
+        self.assertTrue(args.lower)
+        self.assertEquals(echo.main(args_list), "hello world")
 
-    #
-    # Students: add more cmd line options tests here.
-    #
+    def test_lower_long(self):
+        """Check if long option '--lower' performs lowercasing"""
+        args_list = ["--lower", "HELLO WORLD"]
+        args = self.parser.parse_args(args_list)
+        self.assertTrue(args.lower)
+        self.assertEquals(echo.main(args_list), "hello world")
 
+    def test_upper_short(self):
+        """Check if short option '-u' performs uppercasing"""
+        args_list = ["-u", "hello world"]
+        args = self.parser.parse_args(args_list)
+        self.assertTrue(args.upper)
+        self.assertEquals(echo.main(args_list), "HELLO WORLD")
+
+    def test_upper_long(self):
+        """Check if long option '--upper' performs uppercasing"""
+        args_list = ["--upper", "hello world"]
+        args = self.parser.parse_args(args_list)
+        self.assertTrue(args.upper)
+        self.assertEquals(echo.main(args_list), "HELLO WORLD")
+
+    def test_title_short(self):
+        """Check if short option '-t' performs uppercasing"""
+        args_list = ["-t", "hELLO wORLD"]
+        args = self.parser.parse_args(args_list)
+        self.assertTrue(args.title)
+        self.assertEquals(echo.main(args_list), "Hello World")
+
+    def test_title_long(self):
+        """Check if long option '--title' performs uppercasing"""
+        args_list = ["--title", "hELLO wORLD"]
+        args = self.parser.parse_args(args_list)
+        self.assertTrue(args.title)
+        self.assertEquals(echo.main(args_list), "Hello World")
+
+    def test_no_flags(self):
+        """Prints unaltered input text when no options flags are given"""
+        args_list = ['Was soll die ganze Aufregung?']
+        self.assertEquals(echo.main(args_list), 'Was soll die ganze Aufregung?')
+
+    def test_multi_flags(self):
+        """Applies flag rules in the order listed in the help message"""
+        args_list = ["-tlu", "hElLo WoRlD"]
+        self.assertEquals(echo.main(args_list), "Hello World")
 
 if __name__ == '__main__':
     unittest.main()
